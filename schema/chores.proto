@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+message Chore {
+    int32 id = 1;
+    string name = 2;
+    string last_completed = 3;
+    Frequency frequency = 4;   
+}
+
+enum Frequency {
+    WEEKLY = 0;
+    MONTHLY = 1;
+    QUARTERLY = 2;
+    YEARLY = 3;
+}
+
+message ChoreResponse {
+    repeated Chore chores = 1;
+}
+
+message Empty {}
+
+service ChoreService {
+    rpc GetChores(Empty) returns (ChoreResponse);
+    rpc AddChore(Chore) returns (ChoreResponse);
+    rpc UpdateChore(Chore) returns (ChoreResponse);
+}

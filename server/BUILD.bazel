@@ -1,0 +1,52 @@
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@aspect_rules_swc//swc:defs.bzl", "swc")
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
+
+npm_link_all_packages(name = "node_modules")
+
+###
+# This compiles typescript code to javascript using swc.
+###
+ts_project(
+    name = "compile",
+    srcs = [
+        "connect.ts",
+        "server.ts",
+    ],
+    declaration = True,
+    source_map = True,
+    transpiler = swc,
+    deps = [
+        ":node_modules/@connectrpc/connect-express",
+        ":node_modules/express",
+        ":node_modules/morgan",
+        ":node_modules/serve-static",
+        "//data",
+        "//frontend:bundle",
+        "//schema:ts",
+    ],
+)
+
+###
+# This runs the server file.
+###
+js_binary(
+    name = "server",
+    # Use this if 20.6.1 gets published in time.
+    # args = [
+    #     "--env-file",
+    #     ".env",
+    # ],
+    chdir = package_name(),
+    data = [
+        "package.json",  # for type=module
+        ":compile",
+        "//:env",
+        "//frontend:html",
+        "//frontend:tailwind",
+    ],
+    entry_point = "server.js",
+)
+
+exports_files([".env"])

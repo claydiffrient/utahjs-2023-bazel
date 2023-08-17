@@ -1,0 +1,14 @@
+load("@aspect_bazel_lib//lib:copy_to_bin.bzl", "copy_to_bin")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+
+npm_link_all_packages(name = "node_modules")
+
+###
+# This copies the .env file to the bazel output tree so that it can be
+# consumed by other packages.
+###
+copy_to_bin(
+    name = "env",
+    srcs = [".env"],
+    visibility = ["//visibility:public"],
+)

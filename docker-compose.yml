@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres_chores
+      - POSTGRES_PASSWORD=postgres_chores
+      - POSTGRES_DATABASES=dev,test
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./scripts/pg-init:/docker-entrypoint-initdb.d

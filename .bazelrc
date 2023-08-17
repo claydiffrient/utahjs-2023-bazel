@@ -1,0 +1,2 @@
+common --enable_bzlmod
+build --@aspect_rules_ts//ts:skipLibCheck=always

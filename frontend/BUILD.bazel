@@ -1,0 +1,146 @@
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+load("@aspect_rules_js//js:defs.bzl", "js_library", "js_run_devserver")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//frontend:http-server/package_json.bzl", "bin")
+load("@npm//frontend:tailwindcss/package_json.bzl", tailwind_bin = "bin")
+load("@aspect_rules_swc//swc:defs.bzl", "swc")
+load("@aspect_rules_esbuild//esbuild:defs.bzl", "esbuild")
+load("@aspect_bazel_lib//lib:copy_to_bin.bzl", "copy_to_bin")
+load("@aspect_rules_jest//jest:defs.bzl", "jest_test")
+
+npm_link_all_packages(name = "node_modules")
+
+###
+# Since these are used by multiple rules, we define them here.
+###
+_SRCS = [
+    "app.tsx",
+    "header.tsx",
+    "index.tsx",
+    "add_chore.tsx",
+    "chore_list.tsx",
+    "client.ts",
+]
+
+###
+# Compiles TypeScript into JavaScript using swc
+###
+ts_project(
+    name = "compile",
+    srcs = _SRCS,
+    declaration = True,
+    source_map = True,
+    transpiler = swc,
+    deps = [
+        ":node_modules/@connectrpc/connect",
+        ":node_modules/@connectrpc/connect-web",
+        ":node_modules/@headlessui/react",
+        ":node_modules/react",
+        ":node_modules/react-dom",
+        "//schema:ts",
+    ],
+)
+
+###
+# Bundle all the assets into a bundle.js and bundle.css file.
+###
+esbuild(
+    name = "bundle",
+    srcs = [
+        "custom.css",
+        ":compile",
+        ":html",
+        ":tailwind",
+    ],
+    entry_point = "index.tsx",
+    output_css = "bundle.css",
+    visibility = ["//visibility:public"],
+)
+
+###
+# Run tailwind to produce the tailwind.css file
+###
+tailwind_bin.tailwind(
+    name = "tailwind",
+    srcs = _SRCS + [
+        "main.css",
+        ":tailwind_config",
+    ],
+    outs = ["tailwind.css"],
+    args = [
+        "--output",
+        "tailwind.css",
+    ],
+    chdir = package_name(),
+    visibility = ["//visibility:public"],
+)
+
+###
+# Provides the tailwind config file for use by other rules.
+###
+js_library(
+    name = "tailwind_config",
+    srcs = [
+        "tailwind.config.js",
+    ],
+    deps = [
+        ":node_modules/@tailwindcss/forms",
+    ],
+)
+
+###
+# Move our index.html file into the output tree so that it can be served.
+###
+copy_to_bin(
+    name = "html",
+    srcs = ["index.html"],
+    visibility = ["//visibility:public"],
+)
+
+###
+# Define a binary tool to be used for serving the frontend.
+###
+bin.http_server_binary(
+    name = "http_server",
+)
+
+###
+# Use a devserver to serve the frontend.  This will automatically rebuild
+# on changes when you use ibazel.
+###
+js_run_devserver(
+    name = "frontend",
+    args = ["frontend"],
+    data = [
+        "index.html",
+        ":bundle",
+        ":tailwind",
+    ],
+    tool = ":http_server",
+)
+
+ts_project(
+    name = "test_lib",
+    srcs = ["header.test.ts"],
+    declaration = True,
+    source_map = True,
+    transpiler = swc,
+    deps = [
+        ":node_modules/@connectrpc/connect",
+        ":node_modules/@connectrpc/connect-web",
+        ":node_modules/@headlessui/react",
+        ":node_modules/react",
+        ":node_modules/react-dom",
+        "//schema:ts",
+    ],
+)
+
+###
+# Runs jest tests
+###
+# jest_test(
+#     name = "test"
+#     data = [
+#         ""
+#     ]
+# )

@@ -1,0 +1,48 @@
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+load("@aspect_rules_swc//swc:defs.bzl", "swc")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//data:knex/package_json.bzl", _knex = "bin")
+
+npm_link_all_packages(name = "node_modules")
+
+###
+# Compiles queries.ts to queries.js using swc.
+# It is the main library code for interacting with the database.
+###
+ts_project(
+    name = "data",
+    srcs = [
+        "queries.ts",
+    ],
+    declaration = True,
+    source_map = True,
+    transpiler = swc,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":node_modules/dotenv",
+        ":node_modules/knex",
+        "//schema:ts",
+    ],
+)
+
+###
+# Run migrations using knex.
+###
+_knex.knex_binary(
+    name = "migrate",
+    args = [
+        "migrate:latest",
+    ],
+    chdir = package_name(),
+    data = [
+        "knexfile.js",
+        ":node_modules/knex",
+        ":node_modules/dotenv",
+        "//:env",
+    ] + glob(["migrations/*.js"]),
+)
+
+###
+# TODO: Make a macro that generates a migration file, then copies it back to the source directory.
+# load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+###

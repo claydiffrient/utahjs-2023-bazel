@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@connectrpc/connect": "^0.13.2",
+    "@connectrpc/connect-express": "^0.13.2",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "serve-static": "^1.15.0"
+  },
+  "type": "module"
+}
