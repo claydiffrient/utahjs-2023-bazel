@@ -3,9 +3,9 @@
 This is a demonstration project for showing Bazel in use for a monorepo-type
 application setup.
 
-**Note**: This is just an example of how Bazel might be used, the specific
-details of the project is mostly irrevelant and _should not be
-considered best practices or any like it._
+> **Note**: This is just an example of how Bazel might be used, the specific
+> details of the project is mostly irrevelant and _should not be
+> considered best practices or any like it._
 
 It is primarily divided into 5 main packages.
 
