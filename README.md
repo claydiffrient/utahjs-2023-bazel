@@ -25,6 +25,11 @@ available through `npm` via `npm install -g @bazel/bazelisk`
 Bazelisk will determine the version needed for any given Bazel project,
 download it, and then use.
 
+This project also uses a Postgres database. You'll need to have one of those
+running and provide an `.env` file with the details in the root. Running
+`cp env.example .env` and making the appropriate modifications should work
+well.
+
 ## Running Things
 
 `bazel run //server` will build and run everything
