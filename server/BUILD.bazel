@@ -48,5 +48,3 @@ js_binary(
     ],
     entry_point = "server.js",
 )
-
-exports_files([".env"])
